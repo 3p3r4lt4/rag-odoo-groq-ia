@@ -21,7 +21,6 @@ class OdooClient:
         headers = {
             "Content-type": "application/json",
             "token": settings.odoo_api_token_servicios,
-            "Cookie": "session_id=808254928910e2da70c349ca2b3d9aec2a33ba66"
         }
         
         data = {
@@ -31,9 +30,31 @@ class OdooClient:
         
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
+                logger.info(f"Consultando servicio {service_id} en {url}")
                 response = await client.post(url, headers=headers, json=data)
+                
+                # Log de respuesta para debug
+                logger.info(f"Status: {response.status_code}, Respuesta: {response.text[:200]}")
+                
                 response.raise_for_status()
-                return response.json()
+                result = response.json()
+                
+                # Verificar estructura de respuesta
+                if not isinstance(result, dict):
+                    return {"error": "Respuesta no es JSON válido", "success": False}
+                
+                # Asegurar que tiene campo success
+                if "success" not in result:
+                    result["success"] = True  # Asumir éxito si no hay campo
+                    
+                return result
+            
+        except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP error {e.response.status_code}: {e.response.text}")
+            return {"error": f"HTTP {e.response.status_code}", "success": False}
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}")
+            return {"error": "Respuesta no es JSON válido", "success": False}
         except Exception as e:
             logger.error(f"Error consultando servicios: {e}")
             return {"error": str(e), "success": False}

@@ -150,10 +150,16 @@ También puedes escribir: "consulta servicio 8812"
                 
                 try:
                     result = await self.odoo_client.consultar_servicios("5", service_id)
-                    formatted = self.odoo_client.format_response(result, "servicio")
-                    await update.message.reply_text(formatted, parse_mode='Markdown')
+                    if result.get("success") is False:
+                        error_msg = result.get('error', 'Error desconocido')
+                        await update.message.reply_text(f"❌ Error en la consulta: `{error_msg}`")
+                    else:
+                        formatted = self.odoo_client.format_response(result, "servicio")
+                        await update.message.reply_text(formatted, parse_mode='Markdown')
+                    
                 except Exception as e:
-                    await update.message.reply_text(f"❌ Error: {str(e)[:100]}")
+                    logger.error(f"Error en consulta: {e}")
+                    await update.message.reply_text("❌ Error en la consulta: Error desconocido")
             else:
                 await update.message.reply_text("❌ Necesito el ID del servicio. Ejemplo: 'servicio 8812' o '/servicio 8812'")
                 
