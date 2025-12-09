@@ -136,24 +136,54 @@ class OdooClient:
             return f"✅ *Consulta exitosa*\n\n`Datos crudos: {str(data)[:300]}...`"
     
     def _format_service(self, data: Dict[str, Any]) -> str:
-        """Formatea respuesta de servicio"""
+        """Formatea respuesta de servicio - VERSIÓN CORREGIDA"""
         try:
-            # Intentar extraer datos de varias formas
-            service_data = data.get("data", data.get("response", data))
+            # La API devuelve: {"jsonrpc": "2.0", "id": null, "result": {...}}
+            # Extraer los datos del campo 'result'
+            result_data = data.get("result", {})
             
-            if isinstance(service_data, dict):
-                # Extraer campos comunes
+            if not result_data:
+                # Intentar otras posibles ubicaciones
+                result_data = data.get("data", data.get("response", data))
+            
+            if isinstance(result_data, dict) and result_data:
+                # Filtrar campos técnicos y mostrar solo información relevante
                 lines = ["✅ *Información del Servicio*", ""]
                 
-                for key, value in list(service_data.items())[:10]:  # Mostrar primeros 10 campos
-                    if isinstance(value, (str, int, float, bool)) and value:
-                        lines.append(f"• *{key}:* `{value}`")
+                # Campos importantes a mostrar (en orden)
+                important_fields = [
+                    "name", "number_identification", "status_service",
+                    "partner_street", "state", "product_id", "category",
+                    "seller", "collection", "medio", "transporte"
+                ]
+                
+                for field in important_fields:
+                    if field in result_data and result_data[field]:
+                        # Traducir nombres de campos para mejor legibilidad
+                        field_names = {
+                            "name": "Cliente",
+                            "number_identification": "RUC/DNI",
+                            "status_service": "Estado",
+                            "partner_street": "Dirección",
+                            "state": "Departamento",
+                            "product_id": "Producto",
+                            "category": "Categoría",
+                            "seller": "Vendedor",
+                            "collection": "Cobranza",
+                            "medio": "Medio",
+                            "transporte": "Transporte"
+                        }
+                        
+                        display_name = field_names.get(field, field)
+                        lines.append(f"• *{display_name}:* `{result_data[field]}`")
                 
                 return "\n".join(lines)
             else:
-                return f"✅ *Servicio consultado*\n\n`{str(service_data)[:500]}`"
+                # Si no es dict o está vacío
+                return f"✅ *Consulta exitosa*\n\n`{str(data)[:500]}`"
                 
         except Exception as e:
+            logger.error(f"Error formateando servicio: {e}")
             return f"✅ *Servicio consultado*\n\n`{json.dumps(data, ensure_ascii=False)[:500]}`"
     
     def _format_contract(self, data: Dict[str, Any]) -> str:
