@@ -1,3 +1,5 @@
+from handlers.voice_handler import VoiceHandler
+from services.whisper_service import WhisperService
 import logging
 import re
 from telegram import Update, BotCommand
@@ -9,6 +11,7 @@ from telegram.ext import (
     ContextTypes
 )
 
+
 # Configurar logging
 logger = logging.getLogger(__name__)
 
@@ -19,6 +22,9 @@ class TelegramBot:
         self.application = None
         from services.odoo_client import OdooClient
         self.odoo_client = OdooClient()
+        
+        self.whisper_service = WhisperService(model_name="base")
+        self.voice_handler = VoiceHandler(self.whisper_service)
         
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler para /start"""
@@ -258,9 +264,10 @@ También puedes escribir: "consulta servicio 8812"
             # Handler de mensajes de texto
             self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text))
             
-            # AGREGAR ESTO: Handler para mensajes de voz/audio
-            self.application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, self.handle_voice))
-            
+            # CON ESTE NUEVO HANDLER QUE USA WHISPER:
+            self.application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, self.voice_handler.handle_voice_message))
+        
+        
             # Configurar comandos en UI
             await self.setup_commands()
             

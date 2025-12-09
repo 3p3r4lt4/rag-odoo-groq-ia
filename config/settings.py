@@ -3,6 +3,12 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Configuración de Whisper
+WHISPER_MODEL = "base"  # "tiny", "base", "small", "medium", "large"
+WHISPER_API_KEY = os.getenv("WHISPER_API_KEY", "")
+AUDIO_FORMATS = [".ogg", ".mp3", ".wav", ".m4a"]
+MAX_AUDIO_SIZE = 25 * 1024 * 1024  # 25MB
+
 # Cargar variables de entorno
 BASE_DIR = Path(__file__).parent.parent
 env_path = BASE_DIR / '.env'
