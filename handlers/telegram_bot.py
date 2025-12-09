@@ -138,7 +138,15 @@ También puedes escribir: "consulta servicio 8812"
         # Convertir a minúsculas para búsqueda
         text_lower = text.lower()
         
-        logger.info(f"Mensaje recibido: {text}")
+        # LOG DETALLADO
+        logger.debug(f"=== MENSAJE RECIBIDO ===")
+        logger.debug(f"Texto completo: '{text}'")
+        logger.debug(f"Tipo: {type(text)}")
+        logger.debug(f"Longitud: {len(text)}")
+        logger.debug(f"Update ID: {update.update_id}")
+        logger.debug(f"Message ID: {update.message.message_id}")
+        logger.debug(f"Chat ID: {update.message.chat_id}")
+        logger.debug(f"=== FIN MENSAJE ===")
         
         # Detectar patrones simples
         if "servicio" in text_lower:
