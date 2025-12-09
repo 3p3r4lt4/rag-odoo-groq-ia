@@ -6,6 +6,8 @@ httpx==0.24.1  # Versión específica compatible
 aiohttp==3.9.0
 requests==2.31.0
 
+openai-whisper==20250625
+
 # Audio processing (OPCIONAL - comentado por ahora)
 # pydub==0.25.1
 # SpeechRecognition==3.10.0
