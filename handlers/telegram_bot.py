@@ -258,6 +258,9 @@ También puedes escribir: "consulta servicio 8812"
             # Handler de mensajes de texto
             self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text))
             
+            # AGREGAR ESTO: Handler para mensajes de voz/audio
+            self.application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, self.handle_voice))
+            
             # Configurar comandos en UI
             await self.setup_commands()
             
@@ -278,3 +281,32 @@ También puedes escribir: "consulta servicio 8812"
             print(f"ERROR: {e}")
             import traceback
             traceback.print_exc()
+
+    async def handle_voice(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler para mensajes de voz/audio - VERSIÓN MEJORADA"""
+        logger.info("🎤 Mensaje de voz recibido")
+        
+        voice = update.message.voice
+        logger.info(f"Audio: {voice.duration}s, formato: {voice.mime_type}")
+        
+        # Respuesta más amigable y útil
+        response = """
+    🔊 *Audio recibido*
+
+    📝 *Para consultar información, escribe:*
+
+    • `servicio 8815` - Consultar un servicio
+    • `contrato 20607724050` - Ver contratos
+    • `deuda bcp 20514326062` - Consultar deuda BCP
+
+    ⚡ *O usa comandos directos:*
+    `/servicio 8815`
+    `/contrato 20607724050`
+    `/deuda_bcp 20514326062`
+
+    💡 *Consejo:* En Telegram Desktop o móvil, 
+    al enviar audio puedes pulsar "Transcribir" 
+    para convertirlo a texto automáticamente.
+    """
+        
+        await update.message.reply_text(response, parse_mode='Markdown')
